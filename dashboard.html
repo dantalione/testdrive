@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Position Tracker | Market Intel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-main">
+          <div class="brand-icon" aria-label="Position Tracker logo">
+            <span class="logo-grid"></span>
+            <span class="logo-track"></span>
+            <span class="logo-dot"></span>
+            <span class="logo-text">PT</span>
+          </div>
+          <h1>Position Tracker</h1>
+        </div>
+        <button id="openDataInputModalBtn" class="btn btn-input-modal">Input Data</button>
+      </div>
+      <nav class="nav-menu">
+        <button class="nav-item active" data-target="stocks">Stocks Directory</button>
+        <button class="nav-item" data-target="whales">Whales Directory</button>
+        <button class="nav-item" data-target="ecosystems">Conglomerate Map</button>
+        <button class="nav-item" data-target="pep-radar">Political Radar</button>
+        <button class="nav-item" data-target="movements">Movement Radar</button>
+        <button class="nav-item" data-target="relations">Connection Relation</button>
+      </nav>
+      <div class="sidebar-footer">
+        <p>Status: <span style="color:var(--accent-color)">Online</span></p>
+        <div id="loadStatus" class="status-board" style="margin-top:8px;">
+          <div class="status-item">
+            <div class="status-label">1D :</div>
+            <div class="status-value" id="status1dValue">-</div>
+          </div>
+          <div class="status-item">
+            <div class="status-label">KI :</div>
+            <div class="status-value" id="statusDisclosureValue">-</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="top-header">
+        <div class="search-module">
+          <input type="text" id="globalSearch" placeholder="Search ticker, investor, issuer...">
+        </div>
+        <div class="header-actions">
+          <button class="btn" onclick="exportCurrentViewToCSV()">Export CSV</button>
+          <span>Min Ownership: <span id="valRange">0%</span></span>
+          <input type="range" id="filterPct" min="0" max="100" value="0" step="0.5">
+        </div>
+      </header>
+
+      <section id="view-stocks" class="content-body">
+        <div class="kpi-grid kpi-grid-single">
+          <div class="kpi-box kpi-box-stocks">
+            <div class="kpi-stocks-head">
+              <span class="kpi-title">Total Monitored Stocks</span>
+              <span class="kpi-stocks-chip">Live Filter</span>
+            </div>
+            <h2 id="kpiStocks">0</h2>
+            <div class="kpi-stocks-sub">
+              <span>Visible: <b id="kpiStocksVisible">0</b></span>
+              <span>Total Loaded: <b id="kpiStocksTotal">0</b></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel stock-filter-panel" style="margin-bottom:16px;">
+          <div class="toolbar stock-filter-toolbar">
+            <label class="stock-filter-item"><span>Sort</span>
+              <select id="stockSortFilter" class="filter-control">
+                <option value="az">A-Z</option>
+                <option value="volume">Total volume (high-low)</option>
+                <option value="entities">Entity count (high-low)</option>
+              </select>
+            </label>
+            <label class="stock-filter-item"><span>Sector</span>
+              <select id="stockSectorFilter" class="filter-control">
+                <option value="all">All</option>
+              </select>
+            </label>
+            <label class="stock-filter-item"><span>Notasi</span>
+              <select id="stockNotasiFilter" class="filter-control">
+                <option value="all">All</option>
+                <option value="has_any">Has Any Notasi</option>
+              </select>
+            </label>
+            <label class="stock-filter-item"><span>Float Ratio</span>
+              <select id="stockFloatRatioFilter" class="filter-control">
+                <option value="all">ALL</option>
+                <option value="under10">under 10%</option>
+                <option value="10to30">10-30%</option>
+                <option value="30to50">30-50%</option>
+                <option value="over50">over 50%</option>
+              </select>
+            </label>
+            <div id="stockNotasiHelp" class="filter-help stock-filter-help">Notasi: All</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>Stocks Directory</h2>
+              <p class="panel-sub">Ownership distribution grouped by ticker.</p>
+            </div>
+          </div>
+          <div class="data-wrap" id="stocksList"></div>
+        </div>
+      </section>
+
+      <section id="view-whales" class="content-body hidden">
+        <div class="kpi-grid">
+          <div class="kpi-box"><span class="kpi-title">Tracked Whales</span><h2 id="kpiWhales">0</h2></div>
+          <div class="kpi-box">
+            <span class="kpi-title">Multi-asset Portfolios</span>
+            <h2 id="kpiMulti">0</h2>
+            <div class="meta" id="kpiMultiTop3"></div>
+          </div>
+          <div class="kpi-box">
+            <span class="kpi-title">Largest Portfolio</span>
+            <h2 id="kpiMaxPort">0 assets</h2>
+            <div class="meta" id="kpiMaxPortTop3"></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>Whales Directory</h2>
+              <p class="panel-sub">Portfolio grouped by investor key.</p>
+            </div>
+          </div>
+          <div class="toolbar">
+            <label>Type
+              <select id="whaleTypeFilter" class="filter-control">
+                <option value="all">All</option>
+              </select>
+            </label>
+            <label>Origin
+              <select id="whaleOriginFilter" class="filter-control">
+                <option value="all">All</option>
+                <option value="Domestic">Domestic</option>
+                <option value="Foreign">Foreign</option>
+              </select>
+            </label>
+            <label>Min Assets
+              <input id="whaleMinAssetsFilter" class="filter-control" type="number" min="1" step="1" value="1">
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;">
+              <input id="whaleMultiOnlyFilter" type="checkbox">
+              Multi-asset only
+            </label>
+            <button id="whaleResetFilters" class="btn">Reset</button>
+          </div>
+          <div class="data-wrap" id="whalesList"></div>
+        </div>
+      </section>
+
+      <section id="view-ecosystems" class="content-body hidden">
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>Conglomerate Map</h2>
+              <p class="panel-sub">Explore ownership interlocks and ecosystems within major conglomerate groups.</p>
+            </div>
+          </div>
+          <div class="data-wrap" id="ecosystemContainer"></div>
+        </div>
+      </section>
+
+      <section id="view-pep-radar" class="content-body hidden">
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>Political Radar (PEP) & High-Risk Entities</h2>
+              <p class="panel-sub">Track high-risk entities and politically exposed persons related to market positions.</p>
+            </div>
+          </div>
+          <div class="data-wrap" id="pepContainer"></div>
+        </div>
+      </section>
+
+      <section id="view-movements" class="content-body hidden">
+        <div class="kpi-grid">
+          <div class="kpi-box"><span class="kpi-title">Movement Rows</span><h2 id="kpiMoveRows">0</h2></div>
+          <div class="kpi-box"><span class="kpi-title">New / Exit</span><h2 id="kpiNewExit">0/0</h2></div>
+          <div class="kpi-box"><span class="kpi-title">Net Delta Shares</span><h2 id="kpiNetDelta">0</h2></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>Position Movement</h2>
+              <p class="panel-sub">Comparison between snapshot lama vs baru.</p>
+            </div>
+          </div>
+          <div class="data-wrap" id="movementsTable"></div>
+        </div>
+      </section>
+
+      <section id="view-relations" class="content-body hidden">
+        <div class="kpi-grid">
+          <div class="kpi-box"><span class="kpi-title">Relation Edges</span><h2 id="kpiRelEdges">0</h2></div>
+          <div class="kpi-box"><span class="kpi-title">Connected Emitens</span><h2 id="kpiRelEmitens">0</h2></div>
+          <div class="kpi-box"><span class="kpi-title">Connected Entities</span><h2 id="kpiRelEntities">0</h2></div>
+        </div>
+
+        <div class="panel empire-suggestion-panel" style="margin-bottom:14px;">
+          <div class="panel-header">
+            <div>
+              <h2>Empire Mapping Suggestions</h2>
+            </div>
+          </div>
+          <details class="empire-suggestion-collapse">
+            <summary>Suggestions (Optional)</summary>
+            <div class="data-wrap" id="empireSuggestions"></div>
+          </details>
+        </div>
+
+        <div class="panel" style="margin-bottom:14px;">
+          <div class="panel-header">
+            <div>
+              <h2 id="empireLeaderboardTitle">Top 10 Largest Empires</h2>
+              <p id="empireLeaderboardSubtitle" class="panel-sub">Ranking berdasarkan total shares terdeteksi pada relation monitor saat ini.</p>
+            </div>
+          </div>
+          <div class="data-wrap" id="empireLeaderboard"></div>
+        </div>
+
+        <div class="panel relation-map-panel" style="margin-bottom:14px;">
+          <div class="toolbar relation-toolbar">
+            <label>Type
+              <select id="relTypeFilter" class="filter-control">
+                <option value="all">All</option>
+              </select>
+            </label>
+            <label>Origin
+              <select id="relOriginFilter" class="filter-control">
+                <option value="all">All</option>
+                <option value="Domestic">Domestic</option>
+                <option value="Foreign">Foreign</option>
+              </select>
+            </label>
+            <label>Group Name
+              <select id="relGroupFilter" class="filter-control">
+                <option value="all">All</option>
+              </select>
+            </label>
+            <label>Ticker
+              <input id="relTickerFilter" class="filter-control" list="relTickerList" placeholder="e.g. BBCA">
+            </label>
+            <label>Entity
+              <input id="relEntityFilter" class="filter-control" list="relEntityList" placeholder="Investor name">
+            </label>
+            <label>Issuer
+              <input id="relIssuerFilter" class="filter-control" placeholder="Issuer contains">
+            </label>
+            <label>% Min
+              <input id="relPctMinFilter" class="filter-control" type="number" min="0" max="100" step="0.1" value="0">
+            </label>
+            <label>% Max
+              <input id="relPctMaxFilter" class="filter-control" type="number" min="0" max="100" step="0.1" value="100">
+            </label>
+            <label>Min Entity Links
+              <input id="relMinEntityLinks" class="filter-control" type="number" min="1" step="1" value="1">
+            </label>
+            <label>Min Ticker Links
+              <input id="relMinTickerLinks" class="filter-control" type="number" min="1" step="1" value="1">
+            </label>
+            <label class="relation-bridge-label">
+              <input id="relBridgeOnly" type="checkbox">
+              Bridge Only
+            </label>
+            <label>Graph Focus
+              <select id="relGraphFocusType" class="filter-control">
+                <option value="all">All</option>
+                <option value="ticker">Ticker</option>
+                <option value="entity">Entity</option>
+              </select>
+            </label>
+            <label>Focus Value
+              <input id="relGraphFocusValue" class="filter-control" placeholder="Ticker / Entity">
+            </label>
+            <label>Graph Edge Limit
+              <input id="relGraphEdgeLimit" class="filter-control" type="number" min="20" max="400" step="10" value="120">
+            </label>
+            <button id="relResetFilters" class="btn relation-reset-btn">Reset Monitor</button>
+          </div>
+          <datalist id="relTickerList"></datalist>
+          <datalist id="relEntityList"></datalist>
+          <div class="data-wrap relation-graph-wrap" id="relationGraph"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>Relation Table</h2>
+              <p class="panel-sub">Daftar relasi emiten dan entitas (filter mengikuti search + min ownership).</p>
+            </div>
+          </div>
+          <div class="data-wrap" id="relationsTable"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="networkModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-header-left">
+          <h3 id="networkModalTitle">Ownership Network</h3>
+          <div class="modal-actions">
+            <button id="networkBackBtn" class="btn btn-sm">Back</button>
+            <button id="networkForwardBtn" class="btn btn-sm">Forward</button>
+          </div>
+        </div>
+        <button class="modal-close" onclick="closeNetworkGraph()">&times;</button>
+      </div>
+      <div id="networkGraphContainer" class="modal-body"></div>
+    </div>
+  </div>
+
+  <div id="dataInputModal" class="modal hidden">
+    <div class="modal-content input-modal-content">
+      <div class="modal-header">
+        <h3>Input Data</h3>
+        <button class="modal-close" id="dataInputModalCloseBtn">&times;</button>
+      </div>
+      <div class="modal-body input-modal-body">
+        <p class="panel-sub" style="margin-bottom:10px;">Wajib: Snapshot Baru. Opsional: Snapshot Lama, Market 1D, Notasi.</p>
+        <div class="file-toolbar">
+          <label class="file-group">
+            <span class="file-label">Snapshot Baru <span class="tag-required">Wajib</span></span>
+            <input id="newerFile" type="file" accept=".json">
+          </label>
+          <label class="file-group">
+            <span class="file-label">Snapshot Lama <span class="tag-optional">Opsional</span></span>
+            <input id="olderFile" type="file" accept=".json">
+          </label>
+        </div>
+        <details class="optional-files" style="margin-top:10px;">
+          <summary>Optional Data</summary>
+          <div class="file-toolbar optional-row">
+            <label class="file-group">
+              <span class="file-label">Market 1D <span class="tag-optional">Opsional</span></span>
+              <input id="marketFile" type="file" accept=".json">
+            </label>
+            <label class="file-group">
+              <span class="file-label">Notasi <span class="tag-optional">Opsional</span></span>
+              <input id="notasiFile" type="file" accept=".json">
+            </label>
+            <label class="file-group">
+              <span class="file-label">Free Float Estimate <span class="tag-optional">Opsional</span></span>
+              <input id="freeFloatFile" type="file" accept=".json">
+            </label>
+          </div>
+        </details>
+        <div style="margin-top:12px; display:flex; justify-content:flex-end;">
+          <button id="loadBtn" class="btn btn-primary">Load Snapshot</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+  <script src="sector_hardcoded.js"></script>
+  <script src="entities_hardcoded.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

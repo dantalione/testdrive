@@ -1,0 +1,26 @@
+# Python cache
+__pycache__/
+**/__pycache__/
+*.pyc
+
+# Local runtime artifacts
+*.db
+*.db-journal
+
+# Generated caches
+data/store/cache/
+
+# Legacy / duplicate UI files (keep index.html + app.js + styles.css)
+dashboard.html
+tracker_app.js
+tracker_styles.css
+app.py
+templates/
+static/
+
+# Temporary test artifacts
+data/store/market/test_write.js
+
+# Optional large generated exports/snapshots (uncomment if you don't want to version them)
+# data/store/exports/
+# data/store/snapshots/
